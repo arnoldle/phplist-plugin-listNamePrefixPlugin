@@ -1,14 +1,24 @@
 <?php
 
 /**
- * listNamePrefix plugin
+ * listNamePrefix plugin version 1.1
  * 
  * Plugin to include list name in at the start of the subject line of list
  * messages
  *
  * Once this plugin is enabled it will prefix the subject line of each message
- * with the list name enclosed in square brackets, just as the Mailman
- * listserver does.
+ * with the list name prefixed to the subject line. The appearance depends on
+ * the format selected, as a single digit, in the settings for the plugin. The 
+ * available formats are as follows:
+ *				1. [Listname] The Subject
+ *				2. (Listname) The Subject
+ *				3. *Listname* The Subject
+ *				4. <Listname> The Subject
+ *				5. _Listname_ The Subject
+ *				6. Listname: The Subject
+ *				7. Listname - The Subject
+ *
+ *
  *
  */
 
@@ -31,6 +41,16 @@ class listNamePrefixPlugin extends phplistPlugin
     public $description = 'Shows the list name in the subject line of messages';
     public $topMenuLinks = array();
     public $pageTitles = array();
+    public $settings = array(
+    		"ListNamePrefixFormat" => array (
+      			'value' => 1,
+      			'description' => "Select a format for your list name prefix: (1 - 7)",
+      			'allowempty' => 0,
+      			"max" => 7,
+      			"min" => 1,
+      			'category'=> 'general',
+   			 ),
+  			);
     
     private $tblname;
     private $pfxCache = array();
@@ -39,6 +59,8 @@ class listNamePrefixPlugin extends phplistPlugin
     		"id" => array("integer not null primary key ","ID"),
         	"prefix" => array("varchar(255)","Subject prefix")
         );
+    private $firstchar = array('', '[', '(', '*', '<', '_', '', '');
+    private $lastchars = array('', '] ', ') ', '* ', '> ', '_ ', ': ', ' - ');
     	
 	public function __construct()
     {
@@ -61,6 +83,29 @@ class listNamePrefixPlugin extends phplistPlugin
     	return $result['prefix'];
 	}
 	
+/* Create a prefix from an array of list IDs */
+	private function createPrefix ($lists = array())
+	{
+		$mynames = array();
+		$fmt = getConfig('ListNamePrefixFormat');
+    	$pfx = $this->firstchar[$fmt];
+    	
+    	// Get the list names for this message
+		foreach ($lists as $listid) 
+    		$mynames[] = listName($listid);
+    	
+    	// If more than one list, include all the names in the prefix, separated by commas
+    	foreach ($mynames as $thename)
+    	{
+    		if (strlen($pfx) > 1)
+    			$pfx .= ', ';
+    		$pfx .= $thename;
+    	}
+    	$pfx .= $this->lastchars[$fmt];
+    	
+    	return $pfx;
+	}
+	
 /*
    * campaignStarted
    * called when sending of a campaign starts
@@ -73,28 +118,14 @@ class listNamePrefixPlugin extends phplistPlugin
    */
 	public function campaignStarted(&$messagedata = NULL) 
   {
+  		$id = $messagedata['id'];
+  		
   		// Create the list name prefix
-    	$pfx = '[';
-    	$mylists = $messagedata['targetlist'];
-    	$mynames = array();
-    	
-    	// Get the list names for this message
-		foreach ($mylists as $listid) 
-    		$mynames[] = listName($listid);
-    	
-    	// If more than one list, include all the names in the prefix, separated by commas
-    	foreach ($mynames as $thename)
-    	{
-    		if ($pfx <> '[')
-    			$pfx .= ', ';
-    		$pfx .= $thename;
-    	}
-    	$pfx .= '] ';
-    	
-    	$pfxCache[$messagedata['id']] = $pfx;
+    	$pfx = $this->createPrefix ($messagedata['targetlist']);
+  		$pfxCache[$id] = $pfx;
   	
-    	$query = sprintf ('insert into %s values (%d, \'%s\')', $this->tblname, $messagedata['id'], $pfx);
-    	$res = Sql_Query($query);
+    	$query = sprintf ('insert into %s values (%d, \'%s\')', $this->tblname, $id, $pfx);
+    	Sql_Query($query);
   }	
   
   /* canSend  -- The original purpose of this function is:
