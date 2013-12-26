@@ -14,9 +14,9 @@
  *				2. (Listname) The Subject
  *				3. *Listname* The Subject
  *				4. <Listname> The Subject
- *				5. _Listname_ The Subject
- *				6. Listname: The Subject
- *				7. Listname - The Subject
+ *				5. Listname: The Subject
+ *				6. Listname - The Subject
+ *				7. Listname::The Subject
  *
  *
  *
@@ -34,22 +34,32 @@ class listNamePrefixPlugin extends phplistPlugin
     /*
      *  Inherited variables
      */
-    public $name = 'Show List Name Plugin';
-    public $version = '1.0a1';
+    public $name = 'List Name Prefix Plugin';
+    public $version = '1.1a1';
     public $enabled = true;
     public $authors = 'Arnold Lesikar';
-    public $description = 'Shows the list name in the subject line of messages';
+    public $description = 'Prefixes the subject line of messages with the list name';
     public $topMenuLinks = array();
     public $pageTitles = array();
     public $settings = array(
     		"ListNamePrefixFormat" => array (
       			'value' => 1,
       			'description' => "Select a format for your list name prefix: (1 - 7)",
+      			'type' => 'integer',
       			'allowempty' => 0,
       			"max" => 7,
       			"min" => 1,
       			'category'=> 'general',
    			 ),
+   			 "CapitalizePrefix" => array (
+   			 	'value' => 'false',
+   			 	'description' => "Capitalize list name prefix?",
+      			'type' => 'boolean',
+      			'allowempty' => 0,
+      			"max" => 1,
+      			"min" => 0,
+      			'category'=> 'general',
+   			 )
   			);
     
     private $tblname;
@@ -59,8 +69,8 @@ class listNamePrefixPlugin extends phplistPlugin
     		"id" => array("integer not null primary key ","ID"),
         	"prefix" => array("varchar(255)","Subject prefix")
         );
-    private $firstchar = array('', '[', '(', '*', '<', '_', '', '');
-    private $lastchars = array('', '] ', ') ', '* ', '> ', '_ ', ': ', ' - ');
+    private $firstchar = array('', '[', '(', '*', '<', '', '', '');
+    private $lastchars = array('', '] ', ') ', '* ', '> ', ': ', ' - ', '::');
     	
 	public function __construct()
     {
@@ -88,6 +98,7 @@ class listNamePrefixPlugin extends phplistPlugin
 	{
 		$mynames = array();
 		$fmt = getConfig('ListNamePrefixFormat');
+		$caps = getConfig('CapitalizePrefix');
     	$pfx = $this->firstchar[$fmt];
     	
     	// Get the list names for this message
@@ -102,6 +113,8 @@ class listNamePrefixPlugin extends phplistPlugin
     		$pfx .= $thename;
     	}
     	$pfx .= $this->lastchars[$fmt];
+    	if ($caps)
+    		$pfx = strtoupper($pfx);
     	
     	return $pfx;
 	}
