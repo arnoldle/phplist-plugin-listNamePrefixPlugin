@@ -26,7 +26,7 @@
  * Registers the plugin with phplist
  * 
  * @category  phplist
- * @package   ShowListNamePlugin
+ * @package   listNamePrefixPlugin
  */
 
 class listNamePrefixPlugin extends phplistPlugin
