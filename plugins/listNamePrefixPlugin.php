@@ -39,8 +39,6 @@ class listNamePrefixPlugin extends phplistPlugin
     public $enabled = true;
     public $authors = 'Arnold Lesikar';
     public $description = 'Prefixes the subject line of messages with the list name';
-    public $topMenuLinks = array();
-    public $pageTitles = array();
     public $settings = array(
     		"ListNamePrefixFormat" => array (
       			'value' => 1,
@@ -62,14 +60,8 @@ class listNamePrefixPlugin extends phplistPlugin
    			 )
   			);
     
-    private $tblname;
     private $curpfx; // Prefix for the current list message
     private $curid; // ID for the current list message
-    private $pfxStruct = array ( // Struct defining my list-prefix table, second element in each array
-    						 // is only explanatory. That element is not used in creating the table.
-    		"id" => array("integer not null primary key ","ID"),
-        	"prefix" => array("varchar(255)","Subject prefix")
-        );
     private $firstchar = array('', '[', '(', '*', '<', '', '', '');
     private $lastchars = array('', '] ', ') ', '* ', '> ', ': ', ' - ', '::');
     	
@@ -77,23 +69,10 @@ class listNamePrefixPlugin extends phplistPlugin
     {
 
         $this->coderoot = dirname(__FILE__) . '/listNamePrefixPlugin/';
-        $this->tblname = $GLOBALS['table_prefix'] . 'lnprefix';
-
-        // Make sure that the prefix table exists in the database.
-       if (!Sql_Table_exists($this->tblname))
-        	Sql_create_Table($this->tblname, $this->pfxStruct);
-        	
+        
         parent::__construct();
     }
-    
- /* Get stored list name prefix from the database, given the message ID */
-	private function getPfx($id)
-	{
-		$query = sprintf ('select prefix from %s where id = %d', $this->tblname, $id);
-    	$result = Sql_Fetch_Assoc_Query($query);
-    	return $result['prefix'];
-	}
-	
+    	
 /* Create a prefix from an array of list IDs */
 	private function createPrefix ($lists = array())
 	{
@@ -126,48 +105,16 @@ class listNamePrefixPlugin extends phplistPlugin
    * @param array messagedata - associative array with all data for campaign
    * @return null
    * 
-   * We create the list name prefix, add it to the database and 
-   * cache it when the campaign starts.
+   * We create the list name prefix here.
    *
    */
 	public function campaignStarted(&$messagedata = NULL) 
   {
-  		$this->curid = $messagedata['id'];
-  		
   		// Create the list name prefix
     	$this->curpfx  = $this->createPrefix ($messagedata['targetlist']);
-  		
-  		$query = sprintf ('insert into %s values (%d, \'%s\')', $this->tblname, $this->curid, $this->curpfx);
-    	Sql_Query($query);
   }	
   
-  /* canSend  -- The original purpose of this method is as follows
-   *
-   * can this message be sent to this subscriber
-   * if false is returned, the message will be identified as sent to the subscriber
-   * and never tried again
-   * 
-   * @param $messagedata array of all message data
-   * @param $userdata array of all user data
-   * returns bool: true, send it, false don't send it
-   *
-   * What we are doing here instead is verifying that we have a still have a message
-   * ID and a prefix for this user. 
-   *
-   * This might not be necessary if we had a better idea of the program flow and 
-   * whether and how the sending process might be interrupted and whether the process
-   * might be continued from anew by reinvoking the program.
- */
-
-  function canSend ($messagedata, $subscriberdata) 
-  {
-  
-  	if (!isset($this->curpfx))	// Have we got something in our prefix cache for the current user?
-  		$this->curpfx = $this->getPfx($messagedata['id']); 
-  
-    return true; //@@@
-  }
-  
+    
   /* messageHeaders  -- The original purpose of this function is:
    *
    * return headers for the message to be added, as "key => val"
@@ -184,27 +131,9 @@ class listNamePrefixPlugin extends phplistPlugin
   
   public function messageHeaders($mail)
   {
-  	$mail->subject = $this->pfx . $mail->subject;  // Add the prefix
+  	$mail->Subject = $this->curpfx . $mail->Subject;  // Add the prefix
   	
     return array(); //@@@
   }
-  
-   /* initialize
-   *
-   * This function is not really needed, since the plugin automatically creatwe
-   * the database table to store the list name prefix whenever that table is not 
-   * found in the database.
-   *
-   * However, in the event that user chooses to reinitialize PHPlist, perhaps to 
-   * prevent the database from growing too large, the table for the list name
-   * prefix should probably be reinitialized as well. That's why this function is
-   * included in the plugin.
-   *
-   */
-   
-  public function initialize()
-  {
-  	Sql_Drop_Table($this->tblname);
-    Sql_create_Table($this->tblname, $this->pfxStruct);
-  }
 }
+  
