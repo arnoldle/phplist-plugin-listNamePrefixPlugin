@@ -63,7 +63,8 @@ class listNamePrefixPlugin extends phplistPlugin
   			);
     
     private $tblname;
-    private $pfxCache = array();
+    private $curpfx; // Prefix for the current list message
+    private $curid; // ID for the current list message
     private $pfxStruct = array ( // Struct defining my list-prefix table, second element in each array
     						 // is only explanatory. That element is not used in creating the table.
     		"id" => array("integer not null primary key ","ID"),
@@ -131,15 +132,41 @@ class listNamePrefixPlugin extends phplistPlugin
    */
 	public function campaignStarted(&$messagedata = NULL) 
   {
-  		$id = $messagedata['id'];
+  		$this->curid = $messagedata['id'];
   		
   		// Create the list name prefix
-    	$pfx = $this->createPrefix ($messagedata['targetlist']);
-  		$pfxCache[$id] = $pfx;
-  	
-    	$query = sprintf ('insert into %s values (%d, \'%s\')', $this->tblname, $id, $pfx);
+    	$this->curpfx  = $this->createPrefix ($messagedata['targetlist']);
+  		
+  		$query = sprintf ('insert into %s values (%d, \'%s\')', $this->tblname, $this->curid, $this->curpfx);
     	Sql_Query($query);
   }	
+  
+  /* canSend  -- The original purpose of this method is as follows
+   *
+   * can this message be sent to this subscriber
+   * if false is returned, the message will be identified as sent to the subscriber
+   * and never tried again
+   * 
+   * @param $messagedata array of all message data
+   * @param $userdata array of all user data
+   * returns bool: true, send it, false don't send it
+   *
+   * What we are doing here instead is verifying that we have a still have a message
+   * ID and a prefix for this user. 
+   *
+   * This might not be necessary if we had a better idea of the program flow and 
+   * whether and how the sending process might be interrupted and whether the process
+   * might be continued from anew by reinvoking the program.
+ */
+
+  function canSend ($messagedata, $subscriberdata) 
+  {
+  
+  	if (!isset($this->curpfx))	// Have we got something in our prefix cache for the current user?
+  		$this->curpfx = $this->getPfx($messagedata['id']); 
+  
+    return true; //@@@
+  }
   
   /* messageHeaders  -- The original purpose of this function is:
    *
@@ -148,30 +175,16 @@ class listNamePrefixPlugin extends phplistPlugin
    * @param object $mail
    * @return array (headeritem => headervalue)
    *
-   * Our use is to check alter the subject line for the $mail object
+   * Our use is to alter the subject line for the $mail object
    *
    * This is the last point at which we can reach into the queue processing and
    * modify the subject line.
-   *
-   * Because the flow of the code is not well documented for the many different
-   * configurations and situations under which queue processing may take place,
-   * we must check every time that we do in fact have a cached prefix, and we must
-   * be prepared to reload the prefix cache if we don't.
-   *
-   * Usually there should be very little processing done inside this function.
-   * We should have to reload the cache and/or add the prefix to the cached subject line
-   * only very rarely.
    *
  */
   
   public function messageHeaders($mail)
   {
-  
-  	
-  	if (!isset($pfxCache[$id]))	// Have we got something in our prefix cache?
-  		$pfxCache[$id] = $this->getPfx($id); 
-  	
-  	$mail->subject = $pfx . $mail->subject; // If not, put it on.
+  	$mail->subject = $this->pfx . $mail->subject;  // Add the prefix
   	
     return array(); //@@@
   }
