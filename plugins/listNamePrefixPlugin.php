@@ -1,7 +1,7 @@
 <?php
 
 /**
- * listNamePrefix plugin version 1.1
+ * listNamePrefix plugin version 1.2a1
  * 
  * Plugin to include list name in at the start of the subject line of list
  * messages
@@ -35,7 +35,7 @@ class listNamePrefixPlugin extends phplistPlugin
      *  Inherited variables
      */
     public $name = 'List Name Prefix Plugin';
-    public $version = '1.1a1';
+    public $version = '1.2a1';
     public $enabled = true;
     public $authors = 'Arnold Lesikar';
     public $description = 'Prefixes the subject line of messages with the list name';
@@ -141,21 +141,16 @@ class listNamePrefixPlugin extends phplistPlugin
     	Sql_Query($query);
   }	
   
-  /* canSend  -- The original purpose of this function is:
+  /* messageHeaders  -- The original purpose of this function is:
    *
-   * can this message be sent to this subscriber
-   * if false is returned, the message will be identified as sent to the subscriber
-   * and never tried again
-   * 
-   * @param $messagedata array of all message data
-   * @param $userdata array of all user data
-   * returns bool: true, send it, false don't send it
+   * return headers for the message to be added, as "key => val"
    *
-   * Our use is to check for each subscriber whether the subject line for his
-   * message has the proper prefix, and if not, to recover the prefix from 
-   * a cache or from the database to apply to the subject line.
+   * @param object $mail
+   * @return array (headeritem => headervalue)
    *
-   * This is the only point at which we can reach into the queue processing and
+   * Our use is to check alter the subject line for the $mail object
+   *
+   * This is the last point at which we can reach into the queue processing and
    * modify the subject line.
    *
    * Because the flow of the code is not well documented for the many different
@@ -169,25 +164,16 @@ class listNamePrefixPlugin extends phplistPlugin
    *
  */
   
-  public function canSend ($messagedata, $subscriberdata) 
+  public function messageHeaders($mail)
   {
   
-  	global $cached;
-  	$id = $messagedata['id'];
-  	$subject = $cached[$id]['subject'];
   	
   	if (!isset($pfxCache[$id]))	// Have we got something in our prefix cache?
   		$pfxCache[$id] = $this->getPfx($id); 
   	
-  	$pfx = $pfxCache[$id];
-  	$len = strlen($pfx);
+  	$mail->subject = $pfx . $mail->subject; // If not, put it on.
   	
-  	if ($pfx == substr($subject, 0, $len))  // Do we still have a prefix on the subject line this time?
-  		return true;
-  	
-  	$cached[$id]['subject'] = $pfx . $subject; // If not, put it on.
-  	
-    return true; //@@@
+    return array(); //@@@
   }
   
    /* initialize
