@@ -108,7 +108,7 @@ class listNamePrefixPlugin extends phplistPlugin
    * We create the list name prefix here.
    *
    */
-	public function campaignStarted(&$messagedata = NULL) 
+	public function campaignStarted($messagedata = array()) 
   {
   		// Create the list name prefix
     	$this->curpfx  = $this->createPrefix ($messagedata['targetlist']);
