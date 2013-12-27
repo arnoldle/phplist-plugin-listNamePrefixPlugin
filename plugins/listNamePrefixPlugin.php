@@ -18,7 +18,7 @@
  *				6. Listname - The Subject
  *				7. Listname::The Subject
  *
- *
+ * Also the user now has the option of putting the prefix into caps
  *
  */
 
