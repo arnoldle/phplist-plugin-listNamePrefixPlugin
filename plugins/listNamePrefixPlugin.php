@@ -42,10 +42,10 @@ class listNamePrefixPlugin extends phplistPlugin
     public $settings = array(
     		"ListNamePrefixFormat" => array (
       			'value' => 1,
-      			'description' => "Select a format for your list name prefix: (1 - 7)",
+      			'description' => "Select a format for your list name prefix: (1 - 8)",
       			'type' => 'integer',
       			'allowempty' => 0,
-      			"max" => 7,
+      			"max" => 8,
       			"min" => 1,
       			'category'=> 'general',
    			 ),
@@ -57,12 +57,27 @@ class listNamePrefixPlugin extends phplistPlugin
       			"max" => 1,
       			"min" => 0,
       			'category'=> 'general',
+   			 ),
+   			 "LeftBracket" => array (
+   			 	'value' => '',
+   			 	'description' => "Custom Format: Left Bracket",
+      			'type' => 'text',
+      			'allowempty' => 1,
+      			'category'=> 'general',
+   			 ),
+   			 "RightBracket" => array (
+   			 	'value' => '',
+   			 	'description' => "Custom Format: Right Bracket/Separator",
+      			'type' => 'text',
+      			'allowempty' => 1,
+      			'category'=> 'general',
    			 )
   			);
     
     private $curpfx; // Prefix for the current list message
     private $curid; // ID for the current list message
-    private $firstchar = array('', '[', '(', '*', '<', '', '', '');
+    // Number of elements in arrays below = one plus number of standard formats
+    private $firstchar = array('', '[', '(', '*', '<', '', '', ''); // zero element is an unused dummy
     private $lastchars = array('', '] ', ') ', '* ', '> ', ': ', ' - ', '::');
     	
 	public function __construct()
@@ -79,7 +94,15 @@ class listNamePrefixPlugin extends phplistPlugin
 		$mynames = array();
 		$fmt = getConfig('ListNamePrefixFormat');
 		$caps = getConfig('CapitalizePrefix');
+		if ($fmt == count($this->firstchar))
+		{
+			$this->firstchar[$fmt] = getConfig('LeftBracket');
+			$this->lastchars[$fmt] = getconfig('RightBracket');
+		}
     	$pfx = $this->firstchar[$fmt];
+    	$isempty = 1;
+    	
+    		
     	
     	// Get the list names for this message
 		foreach ($lists as $listid) 
@@ -88,9 +111,10 @@ class listNamePrefixPlugin extends phplistPlugin
     	// If more than one list, include all the names in the prefix, separated by commas
     	foreach ($mynames as $thename)
     	{
-    		if (strlen($pfx) > 1)
+    		if (!$isempty)
     			$pfx .= ', ';
     		$pfx .= $thename;
+    		$isempty = 0;
     	}
     	$pfx .= $this->lastchars[$fmt];
     	if ($caps)
