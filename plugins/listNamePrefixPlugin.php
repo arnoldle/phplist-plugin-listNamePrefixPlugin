@@ -111,7 +111,7 @@ class listNamePrefixPlugin extends phplistPlugin
     	// If more than one list, include all the names in the prefix, separated by commas
     	foreach ($mynames as $thename)
     	{
-    		if ($isempty)
+    		if (!$isempty)
     			$pfx .= ', ';
     		$pfx .= $thename;
     		$isempty = 0;
