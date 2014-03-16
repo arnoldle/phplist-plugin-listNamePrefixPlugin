@@ -1,7 +1,7 @@
 <?php
 
 /**
- * listNamePrefix plugin version 1.2a1
+ * listNamePrefix plugin version 1.2a2
  * 
  * Plugin to include list name in at the start of the subject line of list
  * messages
@@ -35,7 +35,7 @@ class listNamePrefixPlugin extends phplistPlugin
      *  Inherited variables
      */
     public $name = 'List Name Prefix Plugin';
-    public $version = '1.2a1';
+    public $version = '1.2a2';
     public $enabled = true;
     public $authors = 'Arnold Lesikar';
     public $description = 'Prefixes the subject line of messages with the list name';
