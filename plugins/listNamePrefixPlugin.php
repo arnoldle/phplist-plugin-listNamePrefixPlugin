@@ -79,7 +79,13 @@ class listNamePrefixPlugin extends phplistPlugin
     // Number of elements in arrays below = one plus number of standard formats
     private $firstchar = array('', '[', '(', '*', '<', '', '', ''); // zero element is an unused dummy
     private $lastchars = array('', '] ', ') ', '* ', '> ', ': ', ' - ', '::');
-    	
+    
+    // This plugin has no web pages. So make sure that nothing appears in the 
+	// dashboard menu
+	function adminmenu() {
+    	return array ();
+  	}
+	
 	public function __construct()
     {
 
