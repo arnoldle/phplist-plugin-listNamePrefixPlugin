@@ -6,6 +6,26 @@
  * Plugin to include list name in at the start of the subject line of list
  * messages
  *
+ * @category  phplist
+ * @package   listNamePrefix
+ * @author    Arnold V. Lesikar
+ * @copyright 2013 Arnold V. Lesikar
+ * @license   http://www.gnu.org/licenses/gpl.html GNU General Public License, Version 3
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ *
  * Once this plugin is enabled it will prefix the subject line of each message
  * with the list name prefixed to the subject line. The appearance depends on
  * the format selected, as a single digit, in the settings for the plugin. The 
