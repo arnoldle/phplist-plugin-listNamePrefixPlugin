@@ -1,7 +1,7 @@
 <?php
 
 /**
- * listNamePrefix plugin version 1.2a2
+ * listNamePrefix plugin version 1.2a3
  * 
  * Plugin to include list name in at the start of the subject line of list
  * messages
@@ -55,7 +55,7 @@ class listNamePrefixPlugin extends phplistPlugin
      *  Inherited variables
      */
     public $name = 'List Name Prefix Plugin';
-    public $version = '1.2a2';
+    public $version = '1.2a3';
     public $enabled = true;
     public $authors = 'Arnold Lesikar';
     public $description = 'Prefixes the subject line of messages with the list name';
@@ -115,7 +115,7 @@ class listNamePrefixPlugin extends phplistPlugin
     }
     	
 /* Create a prefix from an array of list IDs */
-	private function createPrefix ($lists = array())
+	private function createPrefix ($input_lists = array())
 	{
 		$mynames = array();
 		$fmt = getConfig('ListNamePrefixFormat');
@@ -128,9 +128,8 @@ class listNamePrefixPlugin extends phplistPlugin
     	$pfx = $this->firstchar[$fmt];
     	$isempty = 1;
     	
-    		
-    	
     	// Get the list names for this message
+    	$lists = array_keys($input_lists);
 		foreach ($lists as $listid) 
     		$mynames[] = listName($listid);
     	
@@ -148,6 +147,7 @@ class listNamePrefixPlugin extends phplistPlugin
     	
     	return $pfx;
 	}
+
 	
 /*
    * campaignStarted
