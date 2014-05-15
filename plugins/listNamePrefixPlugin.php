@@ -115,7 +115,7 @@ class listNamePrefixPlugin extends phplistPlugin
     }
     	
 /* Create a prefix from an array of list IDs */
-	private function createPrefix ($input_lists = array())
+	private function createPrefix ($lists = array())
 	{
 		$mynames = array();
 		$fmt = getConfig('ListNamePrefixFormat');
@@ -129,7 +129,7 @@ class listNamePrefixPlugin extends phplistPlugin
     	$isempty = 1;
     	
     	// Get the list names for this message
-    	$lists = array_keys($input_lists);
+    	$lists = array_keys($lists);
 		foreach ($lists as $listid) 
     		$mynames[] = listName($listid);
     	
