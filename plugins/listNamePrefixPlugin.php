@@ -1,7 +1,7 @@
 <?php
 
 /**
- * listNamePrefix plugin version 1.2a3
+ * listNamePrefix plugin version 1.2a4
  * 
  * Plugin to include list name in at the start of the subject line of list
  * messages
@@ -55,7 +55,7 @@ class listNamePrefixPlugin extends phplistPlugin
      *  Inherited variables
      */
     public $name = 'List Name Prefix Plugin';
-    public $version = '1.2a3';
+    public $version = '1.2a4';
     public $enabled = true;
     public $authors = 'Arnold Lesikar';
     public $description = 'Prefixes the subject line of messages with the list name';
@@ -181,7 +181,8 @@ class listNamePrefixPlugin extends phplistPlugin
   
   public function messageHeaders($mail)
   {
-  	$mail->Subject = $this->curpfx . $mail->Subject;  // Add the prefix
+  	if (function_exists('parsePlaceHolders')) // Function is not defined when system messages are mailed
+  		$mail->Subject = $this->curpfx . $mail->Subject;  // Add the prefix
   	
     return array(); //@@@
   }
